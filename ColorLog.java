@@ -1,6 +1,7 @@
 package dev.lone.utils;
 
 import org.bukkit.Bukkit;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -31,7 +32,7 @@ public class ColorLog
     }
 
     /**
-     * Creates a new ColorLog with a custom color char
+     * Creates a new ColorLog with prefix.
      *
      * @param prefix the prefix of the plugin
      */
@@ -42,7 +43,7 @@ public class ColorLog
     }
 
     /**
-     * Creates a new ColorLog with a custom color char
+     * Creates a new ColorLog with prefix and a specific logger hooked.
      *
      * @param prefix the prefix of the plugin
      * @param logger the logger
@@ -65,7 +66,7 @@ public class ColorLog
 
     /**
      * Changes the current logger.
-     * 
+     *
      * @param logger the logger
      */
     public void setLogger(Logger logger)
@@ -100,24 +101,24 @@ public class ColorLog
      * Converts a String with Minecraft-ColorCodes into Ansi-Colors.
      * Returns null if the string is null.
      *
-     * @param string the string. Can be null
+     * @param string the string.
      * @return the converted string or null if the string is null
      */
     private static String applyColors(String string)
     {
-        // Continue if String is neither not null nor empty
-        if (string != null && !string.isEmpty())
+        if (!string.isEmpty())
         {
             Matcher matcher = COLOR_SEARCH_PATTERN.matcher(string);
 
             if (matcher.groupCount() > 0)
             {
                 String coloredMessage = String.copyValueOf(string.toCharArray()) + ConsoleColor.RESET.ansiColor;
-                // run through result
                 while (matcher.find())
                 {
                     String result = matcher.group(1);
                     ConsoleColor color = ConsoleColor.getColorByCode(result.charAt(1));
+                    if (color == null)
+                        continue;
                     coloredMessage = coloredMessage.replace(result, color.getAnsiColor());
                 }
                 return coloredMessage;
@@ -153,7 +154,6 @@ public class ColorLog
         UNDERLINE('n', FORMAT_PATTERN, 4),
         RESET('r', FORMAT_PATTERN, 0);
 
-
         private final char bukkitColor;
         private final String ansiColor;
 
@@ -169,6 +169,7 @@ public class ColorLog
          * @param code the Minecraft-ColorCode without Formatter-Char
          * @return the Color enum or null if no enum can be found
          */
+        @Nullable
         public static ConsoleColor getColorByCode(char code)
         {
             for (ConsoleColor color : values())
@@ -176,8 +177,7 @@ public class ColorLog
                 if (color.bukkitColor == code)
                     return color;
             }
-            // return null for not found
-            throw new IllegalArgumentException("Color with code " + code + " does not exists");
+            return null;
         }
 
         /**
